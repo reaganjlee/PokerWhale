@@ -59,6 +59,13 @@ class StandardDeck(Deck):
             for suit in suits:
                 self.cards.append(Card(values[name], name, suit))
 
+    def get_card(self, name, suit):
+        for card in self.cards:
+            if (card.name == name):
+                if (card.suit == suit):
+                    return card
+
+
     def __repr__(self):
         return "standard deck of cards with {0} remaining".format(len(self.cards))
 

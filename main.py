@@ -178,7 +178,7 @@ class Game(object):
 
         self.street = 'Done'
         best_player = 'none'
-        highest_hand = null
+        highest_hand = None
 
         for player in self.positioned:
             print("blah")
