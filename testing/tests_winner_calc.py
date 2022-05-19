@@ -36,6 +36,29 @@ player2_card2.showing = True
 
 class testPairs(unittest.TestCase):
     # card_board = []
+    def test_highestcombo(self):
+        card_board = []
+
+        card_board.append(card_in_testing("Q", "Diamonds"))
+        card_board.append(card_in_testing("J", "Diamonds"))
+        card_board.append(card_in_testing("9", "Diamonds"))
+        card_board.append(card_king_of_hearts)
+        card_board.append(card_in_testing("10", "Diamonds"))
+
+        players = [player1, player2]
+        player1_card1 = card_in_testing("A", "Diamonds")
+        player1_card2 = card_in_testing("K", "Diamonds")
+        player1.cards = [player1_card1, player1_card2]
+        player2.cards = [player2_card1, player2_card2]
+
+        winner_calc = win_calculator(card_board, players)
+        result = winner_calc.highestcombo(players[0])
+        if_statement = winner_calc.if_quads(players[0])
+        print("final cards ", winner_calc.final_cards(players[0]))
+        # print(quads)
+        print("if_statement: ", if_statement)
+        print(result)
+        # self.assertEqual(if_statement, "should be true")
     def test_one_pair(self):
         card_board = []
 
@@ -57,7 +80,28 @@ class testPairs(unittest.TestCase):
         print(if_statement)
         self.assertTrue(if_statement, "should be true")
 
+    def test_get_high_card(self):
+        card_board = []
 
+        card_board.append(card_in_testing("A", "Hearts"))
+        card_board.append(card_in_testing("5", "Clubs"))
+        card_board.append(card_seven_of_clubs)
+        card_board.append(card_king_of_hearts)
+        card_board.append(card_deuce_of_spades)
+
+        players = [player1, player2]
+        player1_card1 = card_in_testing("J", "Spades")
+        player1_card2 = card_in_testing("A", "Diamonds")
+        player1.cards = [player1_card1, player1_card2]
+        player2.cards = [player2_card1, player2_card2]
+
+        winner_calc = win_calculator(card_board, players)
+        high_cards = winner_calc.get_high_cards(players[0])
+        # if_statement = winner_calc.if_two_pair(players[0])
+        print(winner_calc.final_cards(players[0]))
+        print(high_cards)
+        # print(if_statement)
+        # self.assertTrue(if_statement, "should be true")
 
     def test_two_pair(self):
         card_board = []
