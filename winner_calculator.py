@@ -18,16 +18,29 @@ class win_calculator(object):
 
         #calculating the winner
 
-    def checker(self):
+    def checker(self, given_players):
         players_and_combos = []
-        for player in self.players:
+        for player in given_players:
             result = [[str(player)]] + [self.highestcombo(player)]
             players_and_combos.append(result)
-        print(players_and_combos)
+        print("checker -> players and combos: ", players_and_combos)
         current_best = []
-        for player in players_and_combos:
-            pass
+        max = 0
+        max_player = players_and_combos[0][0]
+        for lst in players_and_combos:
+            if max < lst[1][0]:
+                max_player = lst[0]
+                max = lst[1][0]
             #if player[1][0]
+            elif max == lst[1][0]:
+                # Get each players top five cards, then match them. If different, then
+                # say which winner, 1 or 0 or 1, which can tell you which is max_player
+                first_player_cards = lst[0]
+                self.tiebreaker()
+        return max_player
+
+    def tiebreaker(self):
+        pass
 
     def highestcombo(self, player):
         player_nums_with_board = self.player_nums_with_board(player)
@@ -76,28 +89,30 @@ class win_calculator(object):
             print("Trips: " + str(result))
             return [4] + result
 
-        result = self.get_two_pair(player)
-        if result:
+        result = self.get_pairs(player)
+        if self.if_two_pair(player):
             # print('result of if_two_pair below')
-            result.append(self.get_high_cards(player)[0:3])
+            result.append(self.comb_one_lst(self.get_high_cards(player)[0:1]))
             print("Two pair " + str(result))
             return [3] + result
 
-        result = self.get_one_pair(player)
+        # result = self.get_one_pair(player)
         #print('testingxd')
-        if result:
+        if self.if_one_pair(player):
             # print('result of if_one_pair below')
-            result.append(self.get_high_cards(player)[0:4])
+            result.append(self.get_high_cards(player)[0:3])
             print("One pair " + str(result))
             return [2] + result
         print('\n\n')
         '''print(str(self.if_fullhouse))'''
 
-        result = self.if_high_card(player)
+        result = self.get_high_cards(player)
         #print('testingxd')
         if result:
             # print('result of if_high_card below')
+            result = result[0:5]
             print(str(result))
+
             return [1] + result
         print('\n\n')
         '''if_pair = self.if_pair(player_nums)

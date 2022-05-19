@@ -43,7 +43,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests for tests_winner_calc.testPairs.test_highestcombo">
+  <component name="RunManager" selected="Python tests.Python tests for tests_winner_calc.testPairs.test_checker">
     <configuration name="Python tests for tests_winner_calc.testPairs.test_checker" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="pokerwhale" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -116,8 +116,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests for tests_winner_calc.testPairs.test_highestcombo" />
         <item itemvalue="Python tests.Python tests for tests_winner_calc.testPairs.test_checker" />
+        <item itemvalue="Python tests.Python tests for tests_winner_calc.testPairs.test_highestcombo" />
         <item itemvalue="Python tests.Python tests for tests_winner_calc.testPairs.test_quads" />
         <item itemvalue="Python tests.Python tests for tests_winner_calc.testPairs.test_get_high_card" />
         <item itemvalue="Python tests.Python tests for tests_winner_calc.testPairs.test_two_pair" />
@@ -140,57 +140,57 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/testing/tests_winner_calc.py</url>
-          <line>76</line>
+          <line>103</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/testing/tests_winner_calc.py</url>
-          <line>70</line>
+          <line>97</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/winner_calculator.py</url>
-          <line>234</line>
+          <line>249</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/testing/tests_winner_calc.py</url>
-          <line>213</line>
+          <line>240</line>
           <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/testing/tests_winner_calc.py</url>
-          <line>214</line>
+          <line>241</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/testing/tests_winner_calc.py</url>
-          <line>122</line>
+          <line>149</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/testing/tests_winner_calc.py</url>
-          <line>54</line>
+          <line>81</line>
           <option name="timeStamp" value="31" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/winner_calculator.py</url>
-          <line>34</line>
+          <line>47</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/winner_calculator.py</url>
-          <line>460</line>
+          <line>475</line>
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/winner_calculator.py</url>
-          <line>35</line>
+          <line>48</line>
           <option name="timeStamp" value="34" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/winner_calculator.py</url>
-          <line>457</line>
+          <line>472</line>
           <option name="timeStamp" value="35" />
         </line-breakpoint>
       </breakpoints>
