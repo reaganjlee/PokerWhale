@@ -21,26 +21,50 @@ class win_calculator(object):
     def checker(self, given_players):
         players_and_combos = []
         for player in given_players:
-            result = [[str(player)]] + [self.highestcombo(player)]
+            result = [str(player)] + self.highestcombo(player)
             players_and_combos.append(result)
         print("checker -> players and combos: ", players_and_combos)
         current_best = []
         max = 0
-        max_player = players_and_combos[0][0]
+        max_players_and_cards = [] # players_and_combos[0][0]
         for lst in players_and_combos:
-            if max < lst[1][0]:
-                max_player = lst[0]
-                max = lst[1][0]
+            current_player = lst[0]
+            if max < lst[1]:
+                max_players_and_cards = [lst]
+                max = lst[1]
             #if player[1][0]
-            elif max == lst[1][0]:
+            elif max == lst[1]:
                 # Get each players top five cards, then match them. If different, then
                 # say which winner, 1 or 0 or 1, which can tell you which is max_player
-                first_player_cards = lst[0]
-                self.tiebreaker()
-        return max_player
+                # first_player_cards = lst[0]
+                max_players_and_cards += [lst]
+                # self.tiebreaker()
+        return self.tiebreaker(max_players_and_cards)
 
-    def tiebreaker(self):
-        pass
+    def tiebreaker(self, max_players_and_cards):
+        if len(max_players_and_cards) == 1:
+            return max_players_and_cards[0][0]
+        max_player = ""
+        for index in range(len(max_players_and_cards[0][2])):
+            top_card = None
+            for lst in max_players_and_cards:
+                card_to_check = lst[2][index]
+                if top_card == None:
+                    max_player = lst[0]
+                    top_card = lst[2][index]
+                elif card_to_check.number != top_card.number:
+                    if card_to_check.number > top_card.number:
+                        top_card = card_to_check
+                        max_player = lst[0]
+                        max_players_and_cards.remove(lst)
+                    else:
+                        max_players_and_cards.remove(lst)
+        max_player_lst = []
+        # if len(max_players_and_cards) > 1:
+        for lst in max_players_and_cards:
+            max_player_lst.append(lst[0])
+        return max_player_lst
+
 
     def highestcombo(self, player):
         player_nums_with_board = self.player_nums_with_board(player)
@@ -49,20 +73,21 @@ class win_calculator(object):
         if self.if_royal_flush(player):
             # print('result of if_royal_flush below')
             print("Royal Flush: " + str(result))
-            return [10] + result
+            return [10] + [result]
 
         # result = self.gets(player)
         if result:
             # print('result of if_straight_flush below')
             print("Straight Flush: " + str(result))
-            return [9] + result
+            return [9] + [result]
 
         result = self.get_quads(player)
         if result:
             # print('result of if_quads below')
-            result.append(self.get_high_cards(player)[0])
+            result = self.comb_one_lst(result)
+            result.append(self.get_high_cards(player)[0][0])
             print("quads " + str(result))
-            return [8] + result
+            return [8] + [result]
 
         result = self.get_fullhouse(player)
         if result:
@@ -80,29 +105,32 @@ class win_calculator(object):
         if result:
             # print('result of if_straight below')
             print("straight " + str(result))
-            return [5] + [result]
+            return [5] + [self.comb_one_lst(result)]
 
         result = self.get_three_of_kind(player)
         if result:
             # print('result of if_set below')
             result.append(self.comb_one_lst(self.get_high_cards(player)[0:2]))
+            result = self.comb_one_lst(result)
             print("Trips: " + str(result))
-            return [4] + result
+            return [4] + [result]
 
         result = self.get_pairs(player)
         if self.if_two_pair(player):
             # print('result of if_two_pair below')
             result.append(self.comb_one_lst(self.get_high_cards(player)[0:1]))
+            result = self.comb_one_lst(result)
             print("Two pair " + str(result))
-            return [3] + result
+            return [3] + [result]
 
         # result = self.get_one_pair(player)
         #print('testingxd')
         if self.if_one_pair(player):
             # print('result of if_one_pair below')
-            result.append(self.get_high_cards(player)[0:3])
+            result.append(self.comb_one_lst(self.get_high_cards(player)[0:3]))
+            result = self.comb_one_lst(result)
             print("One pair " + str(result))
-            return [2] + result
+            return [2] + [result]
         print('\n\n')
         '''print(str(self.if_fullhouse))'''
 
@@ -111,9 +139,9 @@ class win_calculator(object):
         if result:
             # print('result of if_high_card below')
             result = result[0:5]
-            print(str(result))
+            print(player, "High card: ", str(result))
 
-            return [1] + result
+            return [1] + [self.comb_one_lst(result)]
         print('\n\n')
         '''if_pair = self.if_pair(player_nums)
     print(str(if_pair))
@@ -459,7 +487,7 @@ class win_calculator(object):
 
             # get all the possible cards that can make straights
             number_of_cards_in_flushes = len(flushes)
-            for i in range(number_of_cards_in_flushes - 1):
+            for i in range(number_of_cards_in_flushes - 4):
                 j = i
                 counter = 1
                 while (j < number_of_cards_in_flushes - 1) and \
@@ -469,8 +497,9 @@ class win_calculator(object):
                 if counter >= 5:
                     highest_straight_cards.append(flushes[i:i+5])
                     continue
-            print("highest straight cards: ", highest_straight_cards[0])
-            return highest_straight_cards[0]
+            if highest_straight_cards:
+                print("highest straight cards: ", highest_straight_cards[0])
+                return highest_straight_cards[0]
         return None
 
         # straights = self.get_straights(player)

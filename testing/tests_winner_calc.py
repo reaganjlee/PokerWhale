@@ -45,15 +45,19 @@ class testPairs(unittest.TestCase):
         card_board.append(card_king_of_hearts)
         card_board.append(card_in_testing("5", "Spades"))
 
-        players = [player1, player2]
-        player1_card1 = card_in_testing("4", "Diamonds")
+        players = [player1, player2, player3]
+        player1_card1 = card_in_testing("Q", "Diamonds")
         player1_card2 = card_in_testing("9", "Diamonds")
 
         player2_card1 = card_in_testing("Q", "Hearts")
-        player2_card2 = card_in_testing("6", "Spades")
+        player2_card2 = card_in_testing("9", "Spades")
+
+        player3_card1 = card_in_testing("J", "Hearts")
+        player3_card2 = card_in_testing("5", "Spades")
 
         player1.cards = [player1_card1, player1_card2]
         player2.cards = [player2_card1, player2_card2]
+        player3.cards = [player3_card1, player3_card2]
 
         winner_calc = win_calculator(card_board, players)
         result = winner_calc.checker(players)
@@ -66,15 +70,15 @@ class testPairs(unittest.TestCase):
     def test_highestcombo(self):
         card_board = []
 
-        card_board.append(card_in_testing("3", "Diamonds"))
-        card_board.append(card_in_testing("Q", "Spades"))
-        card_board.append(card_in_testing("Q", "Hearts"))
+        card_board.append(card_in_testing("10", "Diamonds"))
+        card_board.append(card_in_testing("J", "Diamonds"))
+        card_board.append(card_in_testing("Q", "Diamonds"))
         card_board.append(card_king_of_hearts)
-        card_board.append(card_in_testing("5", "Spades"))
+        card_board.append(card_in_testing("9", "Diamonds"))
 
         players = [player1, player2]
-        player1_card1 = card_in_testing("4", "Diamonds")
-        player1_card2 = card_in_testing("9", "Diamonds")
+        player1_card1 = card_in_testing("K", "Diamonds")
+        player1_card2 = card_in_testing("A", "Diamonds")
         player1.cards = [player1_card1, player1_card2]
         player2.cards = [player2_card1, player2_card2]
 
