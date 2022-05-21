@@ -1,23 +1,28 @@
 from cards import *
 from players import player1, player2, player3, player4
 from winner_calculator import *
+from pot import *
 from collections import Counter
 
 
 class Game(object):
     def __init__(self, cards, players, small_blind_amt=.10, big_blind_amt=.20):
         self.cards = cards
-        self.pot = 0
+        # self.pot = 0
+        self.current_pot = Pot(0)
+
         # The current main bet on the table
-        self.table_stake = 0
+        self.table_stake = self.current_pot.table_stake
         # Difference between players' current bet and table stake
-        self.stake_gap = 0
+        # self.stake_gap = self.current_pot.stake_gap
         # Min re-raise amount is the difference between previous raise and what was previously at the table
         self.req_min_raise_diff = big_blind_amt
         self.card_board = []
         self.players = players.copy()  # Just the list of players
         self.small_blind_amt = small_blind_amt
         self.big_blind_amt = big_blind_amt
+        self.current_pot.add_lst_participants(players)
+        self.pots = [self.current_pot]
 
         self.current_bet = 0
         self.street = 'Pre-flop'
@@ -56,8 +61,12 @@ class Game(object):
 
         self.cards.shuffle()
         self.deal_cards_all_players()
+        self.current_pot = Pot(0)
+        self.current_pot.add_lst_participants(self.players_not_out)
+        self.pots = [self.current_pot]
         self.blinds_in_roles_set()
         print('The blinds have been put in, UTG starts')
+        # self.turn = 1
         self.next_turn()
 
         #current_street()
@@ -74,10 +83,20 @@ class Game(object):
 
         if folded == False:
             self.turn += 1
+
+        if_all_evened_out = True
+        for player in self.players_not_out:
+            if player.current_stake != self.table_stake:
+                if_all_evened_out = False
+        if self.street != 'Pre-flop' and self.table_stake != 0 and self.turn != 0 and if_all_evened_out:
+            self.next_street()
+        # if self.street != 'Pre-flop' and if_all_evened_out
+
         if (self.turn == len(self.players_not_out)):
-            if (self.street == 'Pre-flop'):
+            if (self.street == 'Pre-flop') or if_all_evened_out == False: # self.players_not_out[0].current_stake != self.table_stake:
                 # If it is preflop and the turn counter for players reaches max, it goes
                 # back to the SB and BB
+                # Or if there is a raiser
                 self.turn = 0
             else:
                 self.next_street()
@@ -99,7 +118,7 @@ class Game(object):
             print("player's current stake: " +
                   str(round(self.players_not_out[self.turn].current_stake, 2)))
             print("game's stake: " + str(self.table_stake))
-            print("game's current pot size: " + str(round(self.pot, 2)))
+            print("game's current pot size: " + self.display_pot_amt())
             print('special_role: ' +
                   str(self.players_not_out[self.turn].special_role))
 
@@ -115,6 +134,7 @@ class Game(object):
                     self.next_turn(True)
                 else:
                     self.next_turn()
+
     def get_input_and_redirect(self):
         while True:
             try:
@@ -125,9 +145,8 @@ class Game(object):
                     else:
                         print('\nYour options are fold, call, raise')
 
-                elif (self.players_not_out[self.turn].current_stake
-                      == self.table_stake) and (players_input
-                                                == 'call'):  #When its BB
+                elif (self.current_player().current_stake == self.table_stake) \
+                        and (players_input == 'call'):  #When its BB
                     print('\nYour options are fold, check, raise')
 
                 elif players_input == 'fold' or players_input == 'call' or players_input == 'raise':
@@ -169,8 +188,9 @@ class Game(object):
             print(self.card_board)
 
             self.turn = -1
+            self.current_pot.table_stake = 0
             self.table_stake = 0
-            self.stake_gap = 0
+            # self.current_pot.stake_gap = 0
             self.current_bet = 0
 
             for player in self.positioned:
@@ -192,8 +212,12 @@ class Game(object):
         self.street = 'Done'
         # best_player = 'none'
         # highest_hand = None
+        players_in_game = []
+        for pot in self.pots:
+            [players_in_game.append(x) for x in pot.participants if x not in players_in_game]
+
         winner_calc = win_calculator(self.card_board, self.positioned)
-        result = winner_calc.checker(self.players_not_out)
+        result = winner_calc.checker(players_in_game)
         # for player in self.positioned:
         #     print("blah")
         print(result)
@@ -229,11 +253,16 @@ class Game(object):
         for player in self.positioned:
             self.cards.deal(player.cards, 2)
 
+    def update_table_stakes(self, amt):
+        self.table_stake = amt
+        self.current_pot.table_stake = amt
+
     def blinds_in_roles_set(self):
         self.players_not_out[-1:][0].special_role = 'Btn'
 
         self.put_money_in_pot(self.small_blind_amt)
-        self.table_stake = self.small_blind_amt
+        self.update_table_stakes(self.small_blind_amt)
+        # self.current_pot.table_stake = self.small_blind_amt
         self.players_not_out[self.turn].special_role = 'SB'
         print('\ncurrent game stake is: ' + str(self.table_stake))
         print('small blinds stake is: ' +
@@ -246,21 +275,27 @@ class Game(object):
         #self.pot += self.small_blind_amt
 
         self.put_money_in_pot(self.big_blind_amt)
-        self.table_stake = self.big_blind_amt
+        self.update_table_stakes(self.big_blind_amt)
+        # self.current_pot.table_stake = self.big_blind_amt
         self.players_not_out[self.turn].special_role = 'BB'
         print('\ncurrent game stake is: ' + str(self.table_stake))
         print('big blinds stake is: ' +
               str(self.players_not_out[self.turn].current_stake))
 
     def put_money_in_pot(self, amount):
-        self.pot += amount
-        self.players_not_out[self.turn].current_stack -= amount
-        self.players_not_out[self.turn].current_stake += amount
+        # self.pot += amount
+        self.current_pot.add_amt(amount)
+        self.current_player().current_stack -= amount
+        self.current_player().current_stake += amount
+        # self.current_pot.table_stake = amount
+        # self.table_stake = self.current_pot.table_stake
 
 
     # Players' actions
 
     def fold(self):
+        for pot in self.pots:
+            pot.participants.remove(self.current_player())
         print(str(self.players_not_out.pop(self.turn).name) + ' folds')
         print(self.players_not_out)
         '''print('\npositioned should have all the players still ')
@@ -270,8 +305,12 @@ class Game(object):
         print(str(self.players_not_out[self.turn]) + ' checks')
 
     def call(self):
-        self.put_money_in_pot(self.table_stake -
-                              self.players_not_out[self.turn].current_stake)
+        call_amt = self.table_stake - self.current_player().current_stake
+        if call_amt > self.current_player().current_stack:
+            self.all_in()
+        else:
+            self.put_money_in_pot(call_amt)
+            # self.update_table_stakes(call_amt)
 
     def raise_by(self, raise_amount):
         raise_amount = float(raise_amount)
@@ -289,15 +328,48 @@ class Game(object):
             self.get_input_and_redirect()
             return
 
-        print(
-            str(self.current_player()) + ' raises to' + str(raise_amount))
-        self.put_money_in_pot(raise_amount)
-        # Min re-raise amount is the difference between previous raise and what was previously at the table
-        self.req_min_raise_diff = raise_amount - self.table_stake
-        self.table_stake = raise_amount
 
+        if raise_amount == self.current_player().current_stack:
+            self.all_in()
+        else:
+            print(str(self.current_player()) + ' raises to' + str(raise_amount))
+            self.put_money_in_pot(raise_amount)
+            self.update_table_stakes(raise_amount)
+            # Min re-raise amount is the difference between previous raise and what was previously at the table
+            self.req_min_raise_diff = raise_amount - self.table_stake
+            # self.current_pot.table_stake = raise_amount
+    def max_table_stake(self):
+        max = 0
+        for pot in self.pots:
+            if pot.table_stake > max:
+                max = pot.table_stake
+        return max
+    def all_in(self):
+        # all_in_info = [self.current_player(), [], self.current_player().current_stack]
+        # self.all_in_pots.append(all_in_info)
+        current_player_stack = self.current_player().current_stack
+        if current_player_stack > self.max_table_stake():
+            self.update_table_stakes(current_player_stack)
+        # else:
+            # deduct the difference of table stake and all_in amount and add
+            # that into a new pot of the players that already put money in
 
+        # if current_player_stack < self.cu
 
+        self.put_money_in_pot(current_player_stack)
+
+        # self.current_pot.table_stake = self.current_player().current_stack
+        # self.players_not_out.remove(self.current_player())
+        new_pot = Pot(0)
+        new_pot.add_lst_participants(self.players_not_out)
+        self.pots.append(new_pot)
+        self.current_pot = new_pot
+
+    def display_pot_amt(self):
+        total = 0
+        for pot in self.pots:
+            total += pot.pot_amt
+        return str(round(total, 2))
 
     def current_player(self):
         return self.players_not_out[self.turn]
