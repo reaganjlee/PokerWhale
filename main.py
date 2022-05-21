@@ -1,6 +1,6 @@
 from cards import *
 from players import player1, player2, player3, player4
-#from winner_calculator import calc
+from winner_calculator import *
 from collections import Counter
 
 
@@ -8,8 +8,12 @@ class Game(object):
     def __init__(self, cards, players, small_blind_amt=.10, big_blind_amt=.20):
         self.cards = cards
         self.pot = 0
+        # The current main bet on the table
         self.table_stake = 0
+        # Difference between players' current bet and table stake
         self.stake_gap = 0
+        # Min re-raise amount is the difference between previous raise and what was previously at the table
+        self.req_min_raise_diff = big_blind_amt
         self.card_board = []
         self.players = players.copy()  # Just the list of players
         self.small_blind_amt = small_blind_amt
@@ -22,6 +26,7 @@ class Game(object):
         self.positioned = players.copy()  #list of players in order of position
         # self.players_in_action = players.copy()
         #There can also be vars for SB/BB/Dealer name but don't think it's needed
+        # self.current_player = None
 
         self.last_hand_BB_bust = False
 
@@ -69,12 +74,19 @@ class Game(object):
 
         if folded == False:
             self.turn += 1
-        if (self.street == 'Pre-flop') and (self.turn == len(
-                self.players_not_out)):
-            self.turn = 0
-        if (self.street != 'Pre-flop') and (self.turn == len(
-                self.players_not_out)):
-            self.next_street()
+        if (self.turn == len(self.players_not_out)):
+            if (self.street == 'Pre-flop'):
+                # If it is preflop and the turn counter for players reaches max, it goes
+                # back to the SB and BB
+                self.turn = 0
+            else:
+                self.next_street()
+        # if (self.street == 'Pre-flop') and \
+        #         (self.turn == len(self.players_not_out)):
+        #     self.turn = 0
+        # if (self.street != 'Pre-flop') and \
+        #         (self.turn == len(self.players_not_out)):
+        #     self.next_street()
         if (self.street != 'Done'):
             print('\nThe current turn number is: ' + str(self.turn) + '\n')
 
@@ -91,50 +103,51 @@ class Game(object):
             print('special_role: ' +
                   str(self.players_not_out[self.turn].special_role))
 
-            while True:
-                try:
-                    players_input = input('what would you like to do? ')
-                    if (self.players_not_out[self.turn].current_stake
-                        == self.table_stake) and (players_input
-                                                  == 'check'):
-                        break
-                    elif (players_input == 'check'):
-                        print('\nYour options are fold, call, raise')
+            players_input = self.get_input_and_redirect();
 
-                    elif (self.players_not_out[self.turn].current_stake
-                          == self.table_stake) and (players_input
-                                                    == 'call'):  #When its BB
-                        print('\nYour options are fold, check, raise')
+            # print('we have some input!')
 
-                    elif players_input == 'fold' or players_input == 'call' or players_input == 'raise':
-                        break
-                    else:
-                        print('\nYour options are fold, check, call, raise')
-                except:
-                    continue
-
-            if players_input == 'fold':
-                self.fold()
-            if players_input == 'check':
-                self.check()
-            if players_input == 'call':
-                self.call()
-            if players_input == 'raise':
-                raise_amt = input('What would you like to raise it to? ')
-                self.raise_by(raise_amt)
-
-            print('we have some input!')
-
-            if (self.street == 'Pre-flop') and (
-                    self.turn == 1
-            ):  #can't put this up front because BB has to go during pre-flop
+            if (self.street == 'Pre-flop') and (self.turn == 1):
+                # Can't put this up front because BB has to go during pre-flop
                 self.next_street()
-
             else:
                 if players_input == 'fold':
                     self.next_turn(True)
                 else:
                     self.next_turn()
+    def get_input_and_redirect(self):
+        while True:
+            try:
+                players_input = input('what would you like to do? ')
+                if (players_input == 'check'):
+                    if (self.players_not_out[self.turn].current_stake == self.table_stake):
+                        break
+                    else:
+                        print('\nYour options are fold, call, raise')
+
+                elif (self.players_not_out[self.turn].current_stake
+                      == self.table_stake) and (players_input
+                                                == 'call'):  #When its BB
+                    print('\nYour options are fold, check, raise')
+
+                elif players_input == 'fold' or players_input == 'call' or players_input == 'raise':
+                    break
+                else:
+                    print('\nYour options are fold, check, call, raise')
+            except:
+                continue
+
+        if players_input == 'fold':
+            self.fold()
+        if players_input == 'check':
+            self.check()
+        if players_input == 'call':
+            self.call()
+        if players_input == 'raise':
+            raise_amt = input('What would you like to raise it to? ')
+            self.raise_by(raise_amt)
+        return players_input
+
 
     def next_street(self):
         print('\n\n we got it!\n\n')
@@ -177,12 +190,14 @@ class Game(object):
             return
 
         self.street = 'Done'
-        best_player = 'none'
-        highest_hand = None
-
-        for player in self.positioned:
-            print("blah")
-        return
+        # best_player = 'none'
+        # highest_hand = None
+        winner_calc = win_calculator(self.card_board, self.positioned)
+        result = winner_calc.checker(self.players_not_out)
+        # for player in self.positioned:
+        #     print("blah")
+        print(result)
+        return result
 
     def change_pos_order(self, busted_special_role=None):
 
@@ -242,6 +257,7 @@ class Game(object):
         self.players_not_out[self.turn].current_stack -= amount
         self.players_not_out[self.turn].current_stake += amount
 
+
     # Players' actions
 
     def fold(self):
@@ -257,14 +273,34 @@ class Game(object):
         self.put_money_in_pot(self.table_stake -
                               self.players_not_out[self.turn].current_stake)
 
-    def raise_by(self, amount):
-        if (amount - self.table_stake_gap) < self.stake_gap:
-            raise Exception('the re-raise is not large enough')
+    def raise_by(self, raise_amount):
+        raise_amount = float(raise_amount)
+        # if (raise_amount - self.stake_gap) < self.table_stake:
+        #     raise Exception("")
+        if (raise_amount - self.req_min_raise_diff) < self.table_stake:
+            # raise Exception('the raise is not large enough')
+            print("the raise is not large enough")
+            self.get_input_and_redirect()
+            return
+
+        if (raise_amount > self.current_player().current_stack):
+            # raise Exception('This is a larger amount than you currently have')
+            print("This is a larger amount than you currently have")
+            self.get_input_and_redirect()
+            return
 
         print(
-            str(self.players_not_out[self.turn]) + ' raises to' + str(amount))
-        self.put_money_in_pot(amount)
-        self.table_stake = amount
+            str(self.current_player()) + ' raises to' + str(raise_amount))
+        self.put_money_in_pot(raise_amount)
+        # Min re-raise amount is the difference between previous raise and what was previously at the table
+        self.req_min_raise_diff = raise_amount - self.table_stake
+        self.table_stake = raise_amount
+
+
+
+
+    def current_player(self):
+        return self.players_not_out[self.turn]
 
 game = Game(deck, [player1, player2, player3, player4])
 game.start()
