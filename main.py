@@ -1,5 +1,5 @@
 from cards import *
-from players import player1, player2, player3, player4
+from players import *
 from winner_calculator import *
 from pot import *
 from collections import Counter
@@ -18,17 +18,16 @@ class Game(object):
         # Min re-raise amount is the difference between previous raise and what was previously at the table
         self.req_min_raise_diff = big_blind_amt
         self.card_board = []
-        self.players = players.copy()  # Just the list of players
+        self.players = None   # Just the list of players
         self.small_blind_amt = small_blind_amt
         self.big_blind_amt = big_blind_amt
-        self.current_pot.add_lst_participants(players)
+        # self.current_pot.add_lst_participants(players)
         self.pots = [self.current_pot]
 
         self.current_bet = 0
         self.street = 'Pre-flop'
         self.turn = 0
 
-        self.positioned = players.copy()  #list of players in order of position
         # self.players_in_action = players.copy()
         #There can also be vars for SB/BB/Dealer name but don't think it's needed
         # self.current_player = None
@@ -45,10 +44,48 @@ class Game(object):
             self.players)) + ' players'
         #+ str(self.players)
 
-    def start(self):
-        # print('game restarting')
+    def set_players(self):
+        players = []
+        while True:
+        #     try:
+            num_players = input('How many players would you like to have? ')
+            if (num_players == ""):
+                print('\nCannot be an empty number of players ')
+                continue
+            num_players = int(num_players)
+            if (num_players < 2):
+                print('\nYou need to have 2 players or more to play ')
+                continue
+            else:
+                # print('\nYour options are fold, check, call, raise')
+                counter = 0
+                while counter < num_players:
+                    prompt = "What is the name of player " + str(counter) + "? "
+                    player_name = input(prompt)
+                    player_stack = input ("What is this player's stack size? ")
+                    player_stack = float(player_stack)
+                    if player_stack < 0:
+                        print("Player stack has to be greater than 0")
+                        continue
+                    player = Player(player_name, player_stack)
+                    players.append(player)
+                    counter += 1
+                break
+            # except:
+            #     continue
+        print("It gets to here")
+        self.players = players
+        self.current_pot.add_lst_participants(players)
+        self.positioned = players.copy()  #list of players in order of position
 
         self.players_not_out = self.positioned.copy()
+    def start(self):
+        # print('game restarting')
+        # while True:
+        #     players_input = input('How many players would you like to have?')
+        #     players_input = int(players_input)
+        #     if players_input < 2
+        self.set_players()
 
         #clear cards/roles from all players
         for player in self.players:
@@ -74,8 +111,6 @@ class Game(object):
       print(player.cards)
     print('just for some testing/debugging^')'''
 
-    def current_street(self):
-        pass  #Pre-flop
 
     def next_turn(self, folded=False):
         if len(self.players_not_out) == 1:
