@@ -62,7 +62,9 @@ class Game(object):
                 while counter < num_players:
                     prompt = "What is the name of player " + str(counter) + "? "
                     player_name = input(prompt)
-                    player_stack = input ("What is this player's stack size? ")
+                    player_stack = input("What is this player's stack size? ")
+                    if not self.is_float(player_stack):
+                        continue
                     player_stack = float(player_stack)
                     if player_stack < 0:
                         print("Player stack has to be greater than 0")
@@ -73,7 +75,7 @@ class Game(object):
                 break
             # except:
             #     continue
-        print("It gets to here")
+        # print("It gets to here")
         self.players = players
         self.current_pot.add_lst_participants(players)
         self.positioned = players.copy()  #list of players in order of position
@@ -408,6 +410,13 @@ class Game(object):
 
     def current_player(self):
         return self.players_not_out[self.turn]
+
+    def is_float(self, element) -> bool:
+        try:
+            float(element)
+            return True
+        except ValueError:
+            return False
 
 game = Game(deck, [player1, player2, player3, player4])
 game.start()
